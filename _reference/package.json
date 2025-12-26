@@ -1,0 +1,11 @@
+{
+  "name": "medical_healthcare",
+  "version": "1.0.0",
+  "description": "A freelance project ref:(https://www.freelancer.com/projects/website-design/Web-app-deployment-help-needed/details) Project ID: 40093160",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "KASRAOUI Oussama",
+  "license": "ISC"
+}

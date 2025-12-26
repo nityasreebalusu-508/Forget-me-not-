@@ -1,0 +1,1687 @@
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { Heart, Pill, Calendar, Bell, LogOut, Plus, Check, X, Phone, Globe } from 'lucide-react';
+
+const HealthTrackerApp = () => {
+  const [user, setUser] = useState(null);
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [language, setLanguage] = useState('en');
+  const [authError, setAuthError] = useState('');
+  const [showNotificationHelp, setShowNotificationHelp] = useState(false);
+  
+  // Heart Rate State
+  const [heartRate, setHeartRate] = useState('');
+  const [heartRateHistory, setHeartRateHistory] = useState([]);
+  
+  // Medication State
+  const [medications, setMedications] = useState([]);
+  const [showAddMed, setShowAddMed] = useState(false);
+  const [newMed, setNewMed] = useState({
+    name: '',
+    dose: '',
+    time: '',
+    timing: 'before'
+  });
+
+  // Emergency Contacts State
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [showAddContact, setShowAddContact] = useState(false);
+  const [newContact, setNewContact] = useState({
+    name: '',
+    relationship: '',
+    phone: ''
+  });
+
+  // Translations
+  const translations = {
+    en: {
+      appName: 'Health Tracker',
+      email: 'Email',
+      password: 'Password',
+      login: 'Login',
+      signUp: 'Sign Up',
+      logout: 'Logout',
+      emailOrPhone: 'Email or Phone Number',
+      dashboard: 'Dashboard',
+      heartRate: 'Heart Rate',
+      medications: 'Medications',
+      emergencyContacts: 'Emergency Contacts',
+      latestHeartRate: 'Latest Heart Rate',
+      todaysMedications: "Today's Medications",
+      heartRateTrend: 'Heart Rate Trend',
+      recordHeartRate: 'Record Heart Rate',
+      enterBPM: 'Enter BPM',
+      add: 'Add',
+      recentReadings: 'Recent Readings',
+      history: 'History',
+      addMedication: 'Add Medication',
+      newMedication: 'New Medication',
+      medicationName: 'Medication name',
+      dose: 'Dose (e.g., 50mg)',
+      time: 'Time',
+      beforeMeal: 'Before meal',
+      afterMeal: 'After meal',
+      save: 'Save',
+      cancel: 'Cancel',
+      yourMedications: 'Your Medications',
+      noMedications: 'No medications added yet',
+      noHeartRate: 'No heart rate recorded yet',
+      noMedicationsScheduled: 'No medications scheduled',
+      addEmergencyContact: 'Add Emergency Contact',
+      newContact: 'New Contact',
+      contactName: 'Name',
+      relationship: 'Relationship',
+      phoneNumber: 'Phone Number',
+      yourContacts: 'Your Emergency Contacts',
+      noContacts: 'No emergency contacts added yet',
+      call: 'Call',
+      alreadyHaveAccount: 'Already have an account? Login',
+      dontHaveAccount: "Don't have an account? Sign Up",
+      medicationAdherence: 'Medication Adherence (Last 7 Days)',
+      taken: 'Taken',
+      missed: 'Missed',
+      delete: 'Delete',
+      weeklySummary: 'Weekly Summary',
+      enableNotifications: 'Enable Notifications',
+      notificationsEnabled: 'Notifications Enabled',
+      notificationsBlocked: 'Notifications Blocked - Click to Fix',
+      notificationHelpTitle: '🔔 How to Enable Notifications',
+      notificationHelpSteps: 'Follow these steps to receive medication reminders:',
+      notificationStep1: '1. Click the lock icon (🔒) or info icon (ℹ️) in your browser address bar (left of the URL)',
+      notificationStep2: '2. Look for "Notifications" in the permissions list',
+      notificationStep3: '3. Change the setting from "Block" to "Allow"',
+      notificationStep4: '4. Refresh this page',
+      notificationHelpChrome: 'Chrome/Edge: Click 🔒 → Site settings → Notifications → Allow',
+      notificationHelpFirefox: 'Firefox: Click 🔒 → More information → Permissions → Notifications → Allow',
+      notificationHelpSafari: 'Safari: Safari menu → Settings → Websites → Notifications → Allow for this site',
+      closeHelp: 'Close'
+    },
+    hi: {
+      appName: 'स्वास्थ्य ट्रैकर',
+      email: 'ईमेल',
+      password: 'पासवर्ड',
+      login: 'लॉगिन',
+      signUp: 'साइन अप',
+      logout: 'लॉगआउट',
+      emailOrPhone: 'ईमेल या फ़ोन नंबर',
+      dashboard: 'डैशबोर्ड',
+      heartRate: 'हृदय गति',
+      medications: 'दवाइयाँ',
+      emergencyContacts: 'आपातकालीन संपर्क',
+      latestHeartRate: 'नवीनतम हृदय गति',
+      todaysMedications: 'आज की दवाइयाँ',
+      heartRateTrend: 'हृदय गति प्रवृत्ति',
+      recordHeartRate: 'हृदय गति रिकॉर्ड करें',
+      enterBPM: 'बीपीएम दर्ज करें',
+      add: 'जोड़ें',
+      recentReadings: 'हाल की रीडिंग',
+      history: 'इतिहास',
+      addMedication: 'दवा जोड़ें',
+      newMedication: 'नई दवा',
+      medicationName: 'दवा का नाम',
+      dose: 'खुराक (जैसे, 50mg)',
+      time: 'समय',
+      beforeMeal: 'भोजन से पहले',
+      afterMeal: 'भोजन के बाद',
+      save: 'सहेजें',
+      cancel: 'रद्द करें',
+      yourMedications: 'आपकी दवाइयाँ',
+      noMedications: 'अभी तक कोई दवा नहीं जोड़ी गई',
+      noHeartRate: 'अभी तक कोई हृदय गति रिकॉर्ड नहीं की गई',
+      noMedicationsScheduled: 'कोई दवा निर्धारित नहीं',
+      addEmergencyContact: 'आपातकालीन संपर्क जोड़ें',
+      newContact: 'नया संपर्क',
+      contactName: 'नाम',
+      relationship: 'रिश्ता',
+      phoneNumber: 'फ़ोन नंबर',
+      yourContacts: 'आपके आपातकालीन संपर्क',
+      noContacts: 'अभी तक कोई आपातकालीन संपर्क नहीं जोड़ा गया',
+      call: 'कॉल करें',
+      alreadyHaveAccount: 'पहले से खाता है? लॉगिन',
+      dontHaveAccount: 'खाता नहीं है? साइन अप',
+      medicationAdherence: 'दवा पालन (पिछले 7 दिन)',
+      taken: 'लिया गया',
+      missed: 'छूटा हुआ',
+      delete: 'हटाएं',
+      weeklySummary: 'साप्ताहिक सारांश',
+      enableNotifications: 'सूचनाएं सक्षम करें',
+      notificationsEnabled: 'सूचनाएं सक्षम हैं',
+      notificationsBlocked: 'सूचनाएं अवरुद्ध - ठीक करने के लिए क्लिक करें',
+      notificationHelpTitle: '🔔 सूचनाएं कैसे सक्षम करें',
+      notificationHelpSteps: 'दवा रिमाइंडर प्राप्त करने के लिए इन चरणों का पालन करें:',
+      notificationStep1: '1. अपने ब्राउज़र एड्रेस बार में लॉक आइकन (🔒) या इंफो आइकन (ℹ️) पर क्लिक करें',
+      notificationStep2: '2. अनुमतियों की सूची में "सूचनाएं" खोजें',
+      notificationStep3: '3. सेटिंग को "ब्लॉक" से "अनुमति दें" में बदलें',
+      notificationStep4: '4. इस पेज को रिफ्रेश करें',
+      closeHelp: 'बंद करें'
+    },
+    ta: {
+      appName: 'சுகாதார கண்காணிப்பாளர்',
+      email: 'மின்னஞ்சல்',
+      password: 'கடவுச்சொல்',
+      login: 'உள்நுழைய',
+      signUp: 'பதிவு செய்ய',
+      logout: 'வெளியேறு',
+      emailOrPhone: 'மின்னஞ்சல் அல்லது தொலைபேசி எண்',
+      dashboard: 'டாஷ்போர்டு',
+      heartRate: 'இதய துடிப்பு',
+      medications: 'மருந்துகள்',
+      emergencyContacts: 'அவசர தொடர்புகள்',
+      latestHeartRate: 'சமீபத்திய இதய துடிப்பு',
+      todaysMedications: 'இன்றைய மருந்துகள்',
+      heartRateTrend: 'இதய துடிப்பு போக்கு',
+      recordHeartRate: 'இதய துடிப்பை பதிவு செய்',
+      enterBPM: 'BPM உள்ளிடவும்',
+      add: 'சேர்',
+      recentReadings: 'சமீபத்திய அளவீடுகள்',
+      history: 'வரலாறு',
+      addMedication: 'மருந்து சேர்',
+      newMedication: 'புதிய மருந்து',
+      medicationName: 'மருந்தின் பெயர்',
+      dose: 'டோஸ் (எ.கா., 50mg)',
+      time: 'நேரம்',
+      beforeMeal: 'உணவுக்கு முன்',
+      afterMeal: 'உணவுக்கு பின்',
+      save: 'சேமி',
+      cancel: 'ரத்து செய்',
+      yourMedications: 'உங்கள் மருந்துகள்',
+      noMedications: 'இன்னும் மருந்துகள் எதுவும் சேர்க்கப்படவில்லை',
+      noHeartRate: 'இதய துடிப்பு பதிவு செய்யப்படவில்லை',
+      noMedicationsScheduled: 'திட்டமிடப்பட்ட மருந்துகள் இல்லை',
+      addEmergencyContact: 'அவசர தொடர்பு சேர்',
+      newContact: 'புதிய தொடர்பு',
+      contactName: 'பெயர்',
+      relationship: 'உறவு',
+      phoneNumber: 'தொலைபேசி எண்',
+      yourContacts: 'உங்கள் அவசர தொடர்புகள்',
+      noContacts: 'அவசர தொடர்புகள் எதுவும் சேர்க்கப்படவில்லை',
+      call: 'அழை',
+      alreadyHaveAccount: 'ஏற்கனவே கணக்கு உள்ளதா? உள்நுழைய',
+      dontHaveAccount: 'கணக்கு இல்லையா? பதிவு செய்ய',
+      medicationAdherence: 'மருந்து பின்பற்றல் (கடந்த 7 நாட்கள்)',
+      taken: 'எடுக்கப்பட்டது',
+      missed: 'தவறவிட்டது',
+      delete: 'நீக்கு',
+      weeklySummary: 'வாராந்திர சுருக்கம்',
+      enableNotifications: 'அறிவிப்புகளை இயக்கு',
+      notificationsEnabled: 'அறிவிப்புகள் இயக்கப்பட்டன',
+      notificationsBlocked: 'அறிவிப்புகள் தடுக்கப்பட்டன - சரிசெய்ய கிளிக் செய்க',
+      notificationHelpTitle: '🔔 அறிவிப்புகளை இயக்குவது எப்படி',
+      notificationHelpSteps: 'மருந்து நினைவூட்டல்களைப் பெற இந்த படிகளைப் பின்பற்றவும்:',
+      notificationStep1: '1. உங்கள் பிரவுசர் முகவரி பட்டியில் லாக் ஐகான் (🔒) அல்லது இன்ஃபோ ஐகான் (ℹ️) கிளிக் செய்க',
+      notificationStep2: '2. அனுமதிகள் பட்டியலில் "அறிவிப்புகள்" தேடவும்',
+      notificationStep3: '3. அமைப்பை "தடு" என்பதிலிருந்து "அனுமதி" என மாற்றவும்',
+      notificationStep4: '4. இந்த பக்கத்தை புதுப்பிக்கவும்',
+      closeHelp: 'மூடு'
+    },
+    te: {
+      appName: 'ఆరోగ్య ట్రాకర్',
+      email: 'ఇమెయిల్',
+      password: 'పాస్‌వర్డ్',
+      login: 'లాగిన్',
+      signUp: 'సైన్ అప్',
+      logout: 'లాగ్అవుట్',
+      emailOrPhone: 'ఇమెయిల్ లేదా ఫోన్ నంబర్',
+      dashboard: 'డ్యాష్‌బోర్డ్',
+      heartRate: 'హృదయ స్పందన',
+      medications: 'మందులు',
+      emergencyContacts: 'అత్యవసర పరిచయాలు',
+      latestHeartRate: 'తాజా హృదయ స్పందన',
+      todaysMedications: 'నేటి మందులు',
+      heartRateTrend: 'హృదయ స్పందన ధోరణి',
+      recordHeartRate: 'హృదయ స్పందన రికార్డ్ చేయండి',
+      enterBPM: 'BPM నమోదు చేయండి',
+      add: 'జోడించు',
+      recentReadings: 'ఇటీవలి రీడింగ్‌లు',
+      history: 'చరిత్ర',
+      addMedication: 'మందు జోడించు',
+      newMedication: 'కొత్త మందు',
+      medicationName: 'మందు పేరు',
+      dose: 'మోతాదు (ఉదా., 50mg)',
+      time: 'సమయం',
+      beforeMeal: 'భోజనానికి ముందు',
+      afterMeal: 'భోజనం తర్వాత',
+      save: 'సేవ్ చేయి',
+      cancel: 'రద్దు చేయి',
+      yourMedications: 'మీ మందులు',
+      noMedications: 'ఇంకా మందులు జోడించలేదు',
+      noHeartRate: 'హృదయ స్పందన రికార్డ్ చేయలేదు',
+      noMedicationsScheduled: 'షెడ్యూల్ చేసిన మందులు లేవు',
+      addEmergencyContact: 'అత్యవసర పరిచయం జోడించు',
+      newContact: 'కొత్త పరిచయం',
+      contactName: 'పేరు',
+      relationship: 'సంబంధం',
+      phoneNumber: 'ఫోన్ నంబర్',
+      yourContacts: 'మీ అత్యవసర పరిచయాలు',
+      noContacts: 'అత్యవసర పరిచయాలు జోడించలేదు',
+      call: 'కాల్ చేయి',
+      alreadyHaveAccount: 'ఖాతా ఉందా? లాగిన్',
+      dontHaveAccount: 'ఖాతా లేదా? సైన్ అప్',
+      medicationAdherence: 'మందు పాటించడం (గత 7 రోజులు)',
+      taken: 'తీసుకున్నారు',
+      missed: 'తప్పిపోయారు',
+      delete: 'తొలగించు',
+      enableNotifications: 'నోటిఫికేషన్లను ప్రారంభించండి',
+      notificationsEnabled: 'నోటిఫికేషన్లు ప్రారంభించబడ్డాయి',
+      notificationsBlocked: 'నోటిఫికేషన్లు నిరోధించబడ్డాయి - పరిష్కరించడానికి క్లిక్ చేయండి',
+      notificationHelpTitle: '🔔 నోటిఫికేషన్లను ఎలా ప్రారంభించాలి',
+      notificationHelpSteps: 'మందు రిమైండర్లను పొందడానికి ఈ దశలను అనుసరించండి:',
+      notificationStep1: '1. మీ బ్రౌజర్ అడ్రస్ బార్‌లో లాక్ ఐకాన్ (🔒) లేదా ఇన్ఫో ఐకాన్ (ℹ️) క్లిక్ చేయండి',
+      notificationStep2: '2. అనుమతుల జాబితాలో "నోటిఫికేషన్లు" వెతకండి',
+      notificationStep3: '3. సెట్టింగ్‌ను "బ్లాక్" నుండి "అనుమతించు" కి మార్చండి',
+      notificationStep4: '4. ఈ పేజీని రిఫ్రెష్ చేయండి',
+      closeHelp: 'మూసివేయి'
+    },
+    kn: {
+      appName: 'ಆರೋಗ್ಯ ಟ್ರ್ಯಾಕರ್',
+      email: 'ಇಮೇಲ್',
+      password: 'ಪಾಸ್‌ವರ್ಡ್',
+      login: 'ಲಾಗಿನ್',
+      signUp: 'ಸೈನ್ ಅಪ್',
+      logout: 'ಲಾಗ್ಔಟ್',
+      emailOrPhone: 'ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆ',
+      dashboard: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
+      heartRate: 'ಹೃದಯ ಬಡಿತ',
+      medications: 'ಔಷಧಿಗಳು',
+      emergencyContacts: 'ತುರ್ತು ಸಂಪರ್ಕಗಳು',
+      latestHeartRate: 'ಇತ್ತೀಚಿನ ಹೃದಯ ಬಡಿತ',
+      todaysMedications: 'ಇಂದಿನ ಔಷಧಿಗಳು',
+      heartRateTrend: 'ಹೃದಯ ಬಡಿತ ಪ್ರವೃತ್ತಿ',
+      recordHeartRate: 'ಹೃದಯ ಬಡಿತ ದಾಖಲಿಸಿ',
+      enterBPM: 'BPM ನಮೂದಿಸಿ',
+      add: 'ಸೇರಿಸಿ',
+      recentReadings: 'ಇತ್ತೀಚಿನ ರೀಡಿಂಗ್‌ಗಳು',
+      history: 'ಇತಿಹಾಸ',
+      addMedication: 'ಔಷಧಿ ಸೇರಿಸಿ',
+      newMedication: 'ಹೊಸ ಔಷಧಿ',
+      medicationName: 'ಔಷಧಿಯ ಹೆಸರು',
+      dose: 'ಪ್ರಮಾಣ (ಉದಾ., 50mg)',
+      time: 'ಸಮಯ',
+      beforeMeal: 'ಊಟದ ಮೊದಲು',
+      afterMeal: 'ಊಟದ ನಂತರ',
+      save: 'ಉಳಿಸಿ',
+      cancel: 'ರದ್ದುಮಾಡಿ',
+      yourMedications: 'ನಿಮ್ಮ ಔಷಧಿಗಳು',
+      noMedications: 'ಇನ್ನೂ ಔಷಧಿಗಳನ್ನು ಸೇರಿಸಲಾಗಿಲ್ಲ',
+      noHeartRate: 'ಹೃದಯ ಬಡಿತವನ್ನು ದಾಖಲಿಸಲಾಗಿಲ್ಲ',
+      noMedicationsScheduled: 'ನಿಗದಿಪಡಿಸಿದ ಔಷಧಿಗಳಿಲ್ಲ',
+      addEmergencyContact: 'ತುರ್ತು ಸಂಪರ್ಕ ಸೇರಿಸಿ',
+      newContact: 'ಹೊಸ ಸಂಪರ್ಕ',
+      contactName: 'ಹೆಸರು',
+      relationship: 'ಸಂಬಂಧ',
+      phoneNumber: 'ದೂರವಾಣಿ ಸಂಖ್ಯೆ',
+      yourContacts: 'ನಿಮ್ಮ ತುರ್ತು ಸಂಪರ್ಕಗಳು',
+      noContacts: 'ತುರ್ತು ಸಂಪರ್ಕಗಳನ್ನು ಸೇರಿಸಲಾಗಿಲ್ಲ',
+      call: 'ಕರೆ ಮಾಡಿ',
+      alreadyHaveAccount: 'ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ? ಲಾಗಿನ್',
+      dontHaveAccount: 'ಖಾತೆ ಇಲ್ಲವೇ? ಸೈನ್ ಅಪ್',
+      medicationAdherence: 'ಔಷಧಿ ಪಾಲನೆ (ಕಳೆದ 7 ದಿನಗಳು)',
+      taken: 'ತೆಗೆದುಕೊಂಡಿದ್ದಾರೆ',
+      missed: 'ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದಾರೆ',
+      delete: 'ಅಳಿಸಿ',
+      weeklySummary: 'ಸಾಪ್ತಾಹಿಕ ಸಾರಾಂಶ',
+      enableNotifications: 'ಅಧಿಸೂಚನೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ',
+      notificationsEnabled: 'ಅಧಿಸೂಚನೆಗಳು ಸಕ್ರಿಯಗೊಂಡಿವೆ',
+      notificationsBlocked: 'ಅಧಿಸೂಚನೆಗಳು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ - ಸರಿಪಡಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ',
+      notificationHelpTitle: '🔔 ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೇಗೆ ಸಕ್ರಿಯಗೊಳಿಸುವುದು',
+      notificationHelpSteps: 'ಔಷಧಿ ಜ್ಞಾಪನೆಗಳನ್ನು ಪಡೆಯಲು ಈ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ:',
+      notificationStep1: '1. ನಿಮ್ಮ ಬ್ರೌಸರ್ ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ಲಾಕ್ ಐಕಾನ್ (🔒) ಅಥವಾ ಇನ್ಫೋ ಐಕಾನ್ (ℹ️) ಕ್ಲಿಕ್ ಮಾಡಿ',
+      notificationStep2: '2. ಅನುಮತಿಗಳ ಪಟ್ಟಿಯಲ್ಲಿ "ಅಧಿಸೂಚನೆಗಳು" ಹುಡುಕಿ',
+      notificationStep3: '3. ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು "ನಿರ್ಬಂಧಿಸು" ನಿಂದ "ಅನುಮತಿಸು" ಗೆ ಬದಲಾಯಿಸಿ',
+      notificationStep4: '4. ಈ ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ',
+      closeHelp: 'ಮುಚ್ಚು'
+    }
+  };
+
+  const t = translations[language];
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+      // Don't auto-request on login, let user click the button
+    }
+  }, [user]);
+
+  // Check medications every minute for notifications and mark missed
+  useEffect(() => {
+    if (!user) return;
+    
+    const checkInterval = setInterval(() => {
+      checkMedicationReminders();
+      markMissedMedications();
+    }, 60000); // Check every minute
+
+    // Also check immediately on mount and when medications change
+    checkMedicationReminders();
+    
+    return () => clearInterval(checkInterval);
+  }, [medications, user]);
+
+  const loadUserData = async () => {
+    try {
+      const hrResult = await window.storage.get(`hr:${user.email}`);
+      if (hrResult) {
+        setHeartRateHistory(JSON.parse(hrResult.value));
+      }
+      
+      const medResult = await window.storage.get(`med:${user.email}`);
+      if (medResult) {
+        setMedications(JSON.parse(medResult.value));
+      }
+    } catch (error) {
+      console.log('No existing data found');
+    }
+  };
+
+  const saveHeartRateHistory = async (data) => {
+    try {
+      await window.storage.set(`hr:${user.email}`, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save heart rate:', error);
+    }
+  };
+
+  const saveMedications = async (data) => {
+    try {
+      await window.storage.set(`med:${user.email}`, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save medications:', error);
+    }
+  };
+
+  const saveEmergencyContacts = async (data) => {
+    try {
+      await window.storage.set(`contacts:${user.email}`, JSON.stringify(data));
+    } catch (error) {
+      console.error('Failed to save contacts:', error);
+    }
+  };
+
+  const saveLanguage = async (lang) => {
+    try {
+      await window.storage.set(`lang:${user.email}`, lang);
+    } catch (error) {
+      console.error('Failed to save language:', error);
+    }
+  };
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      setShowNotificationHelp(true);
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      sendNotification('🎉 Notifications Already Enabled!', 'You will receive reminders for your medications');
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      setShowNotificationHelp(true);
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        sendNotification('🎉 Notifications Enabled!', 'You will receive reminders for your medications');
+        setShowNotificationHelp(false);
+        return true;
+      } else {
+        setShowNotificationHelp(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      setShowNotificationHelp(true);
+      return false;
+    }
+  };
+
+  const sendNotification = (title, body) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notification = new Notification(title, { 
+        body, 
+        icon: '💊',
+        badge: '💊',
+        tag: 'medication-reminder',
+        requireInteraction: true,
+        vibrate: [200, 100, 200]
+      });
+      
+      // Play a sound (browser default notification sound)
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+    }
+  };
+
+  const checkMedicationReminders = () => {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
+    medications.forEach(med => {
+      const todayRecord = med.records?.find(r => 
+        new Date(r.date).toDateString() === now.toDateString()
+      );
+      
+      // Send notification if it's time and not yet taken
+      if (med.time === currentTime && !todayRecord?.taken) {
+        const title = '💊 Medication Reminder';
+        const body = `Time to take ${med.name} (${med.dose}) - ${med.timing} meal`;
+        sendNotification(title, body);
+        
+        // Also show a browser alert as backup
+        if (document.visibilityState === 'visible') {
+          // Only show alert if page is visible
+          const shouldNotify = window.confirm(
+            `⏰ Medication Reminder!\n\n${med.name} (${med.dose})\n${med.timing} meal\n\nClick OK to mark as taken, Cancel to dismiss.`
+          );
+          
+          if (shouldNotify) {
+            markMedicationTaken(med.id);
+          }
+        }
+      }
+    });
+  };
+
+  const markMissedMedications = () => {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    // Check if it's end of day (23:59)
+    if (currentTime === 23 * 60 + 59) {
+      const updated = medications.map(med => {
+        const today = new Date().toDateString();
+        const existingRecord = med.records?.find(r => 
+          new Date(r.date).toDateString() === today
+        );
+        
+        // If no record exists for today, mark as missed
+        if (!existingRecord) {
+          return {
+            ...med,
+            records: [...(med.records || []), {
+              date: new Date().toISOString(),
+              taken: false
+            }]
+          };
+        }
+        return med;
+      });
+      
+      setMedications(updated);
+      saveMedications(updated);
+    }
+  };
+
+  const validatePassword = (pwd) => {
+    if (pwd.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return 'Password must contain at least one capital letter';
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return 'Password must contain at least one number';
+    }
+    return null;
+  };
+
+  const validatePhone = (phoneNum) => {
+    // Remove +91 prefix and any spaces/dashes for validation
+    const cleanPhone = phoneNum.replace(/^\+91/, '').replace(/[\s-]/g, '');
+    if (cleanPhone.length !== 10) {
+      return 'Phone number must be 10 digits';
+    }
+    if (!/^\d+$/.test(cleanPhone)) {
+      return 'Phone number must contain only digits';
+    }
+    return null;
+  };
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    
+    if (isSignUp) {
+      // Sign up - need both email and phone
+      if (!email || !password || !phone) {
+        setAuthError('Please fill in all required fields');
+        return;
+      }
+
+      // Validate password
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        setAuthError(passwordError);
+        return;
+      }
+
+      // Validate phone
+      const phoneError = validatePhone(phone);
+      if (phoneError) {
+        setAuthError(phoneError);
+        return;
+      }
+
+      // Ensure phone has +91 prefix
+      const fullPhone = phone.startsWith('+91') ? phone : `+91${phone.replace(/[\s-]/g, '')}`;
+      
+      try {
+        // Check if email already exists
+        try {
+          const existingEmail = await window.storage.get(`user:${email}`);
+          if (existingEmail) {
+            setAuthError('This email is already registered. Please login.');
+            setIsSignUp(false);
+            return;
+          }
+        } catch (error) {
+          // Email doesn't exist, which is good for sign up
+        }
+
+        // Check if phone already exists
+        try {
+          const existingPhone = await window.storage.get(`user:${fullPhone}`);
+          if (existingPhone) {
+            setAuthError('This phone number is already registered. Please login.');
+            setIsSignUp(false);
+            return;
+          }
+        } catch (error) {
+          // Phone doesn't exist, which is good for sign up
+        }
+        
+        // Create new user - store by both email and phone
+        const userData = { email, password, phone: fullPhone };
+        const userDataString = JSON.stringify(userData);
+        
+        const emailResult = await window.storage.set(`user:${email}`, userDataString);
+        const phoneResult = await window.storage.set(`user:${fullPhone}`, userDataString);
+        
+        if (emailResult || phoneResult) {
+          // Successfully created account
+          setUser({ email, phone: fullPhone });
+          setAuthError('');
+        } else {
+          setAuthError('Sign up failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Sign up error:', error);
+        // Even if there's an error, try to create the user
+        const userData = { email, password, phone: fullPhone };
+        setUser({ email, phone: fullPhone });
+        setAuthError('');
+      }
+    } else {
+      // Login - can use either email or phone
+      if (!emailOrPhone || !password) {
+        setAuthError('Please fill in all required fields');
+        return;
+      }
+
+      // If it looks like a phone number (starts with digits), add +91 if not present
+      let loginIdentifier = emailOrPhone;
+      if (/^\d/.test(emailOrPhone) && !emailOrPhone.startsWith('+91')) {
+        loginIdentifier = `+91${emailOrPhone.replace(/[\s-]/g, '')}`;
+      }
+      
+      try {
+        const result = await window.storage.get(`user:${loginIdentifier}`);
+        if (result) {
+          const userData = JSON.parse(result.value);
+          if (userData.password === password) {
+            setUser({ email: userData.email, phone: userData.phone });
+            setAuthError('');
+          } else {
+            setAuthError('Invalid password');
+          }
+        } else {
+          setAuthError('User not found. Please sign up.');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setAuthError('User not found. Please sign up.');
+      }
+    }
+  };
+
+  const handleLogout = () => {
+    // Data is already saved in storage, just clear the session
+    setUser(null);
+    setEmailOrPhone('');
+    setEmail('');
+    setPassword('');
+    setPhone('');
+    setHeartRateHistory([]);
+    setMedications([]);
+    setEmergencyContacts([]);
+    setAuthError('');
+  };
+
+  const addHeartRate = () => {
+    if (!heartRate || isNaN(heartRate)) return;
+    
+    const newEntry = {
+      bpm: parseInt(heartRate),
+      timestamp: new Date().toISOString(),
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString()
+    };
+    
+    const updated = [...heartRateHistory, newEntry];
+    setHeartRateHistory(updated);
+    saveHeartRateHistory(updated);
+    setHeartRate('');
+  };
+
+  const addMedication = () => {
+    if (!newMed.name || !newMed.dose || !newMed.time) return;
+    
+    const medication = {
+      id: Date.now(),
+      ...newMed,
+      records: []
+    };
+    
+    const updated = [...medications, medication];
+    setMedications(updated);
+    saveMedications(updated);
+    setNewMed({ name: '', dose: '', time: '', timing: 'before' });
+    setShowAddMed(false);
+
+    // Show confirmation
+    alert(`✅ Medication added!\n\nYou will receive a notification at ${newMed.time} for ${newMed.name}.`);
+  };
+
+  const markMedicationTaken = (medId) => {
+    const updated = medications.map(med => {
+      if (med.id === medId) {
+        const today = new Date().toDateString();
+        const existingRecord = med.records?.find(r => 
+          new Date(r.date).toDateString() === today
+        );
+        
+        if (existingRecord) {
+          return {
+            ...med,
+            records: med.records.map(r => 
+              new Date(r.date).toDateString() === today 
+                ? { ...r, taken: true }
+                : r
+            )
+          };
+        } else {
+          return {
+            ...med,
+            records: [...(med.records || []), {
+              date: new Date().toISOString(),
+              taken: true
+            }]
+          };
+        }
+      }
+      return med;
+    });
+    
+    setMedications(updated);
+    saveMedications(updated);
+  };
+
+  const markMedicationMissed = (medId) => {
+    const updated = medications.map(med => {
+      if (med.id === medId) {
+        const today = new Date().toDateString();
+        const existingRecord = med.records?.find(r => 
+          new Date(r.date).toDateString() === today
+        );
+        
+        if (existingRecord) {
+          return {
+            ...med,
+            records: med.records.map(r => 
+              new Date(r.date).toDateString() === today 
+                ? { ...r, taken: false }
+                : r
+            )
+          };
+        } else {
+          return {
+            ...med,
+            records: [...(med.records || []), {
+              date: new Date().toISOString(),
+              taken: false
+            }]
+          };
+        }
+      }
+      return med;
+    });
+    
+    setMedications(updated);
+    saveMedications(updated);
+  };
+
+  const deleteMedication = (medId) => {
+    const updated = medications.filter(m => m.id !== medId);
+    setMedications(updated);
+    saveMedications(updated);
+  };
+
+  const addEmergencyContact = () => {
+    if (!newContact.name || !newContact.phone) return;
+    
+    const contact = {
+      id: Date.now(),
+      ...newContact
+    };
+    
+    const updated = [...emergencyContacts, contact];
+    setEmergencyContacts(updated);
+    saveEmergencyContacts(updated);
+    setNewContact({ name: '', relationship: '', phone: '' });
+    setShowAddContact(false);
+  };
+
+  const deleteContact = (contactId) => {
+    const updated = emergencyContacts.filter(c => c.id !== contactId);
+    setEmergencyContacts(updated);
+    saveEmergencyContacts(updated);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    if (user) {
+      saveLanguage(lang);
+    }
+  };
+
+  const getMedicationAdherenceData = () => {
+    const last7Days = [];
+    const today = new Date();
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const isPastDate = date < today && date.toDateString() !== today.toDateString();
+      
+      let taken = 0;
+      let missed = 0;
+      
+      medications.forEach(med => {
+        const record = med.records?.find(r => 
+          new Date(r.date).toDateString() === dateStr
+        );
+        
+        if (record) {
+          if (record.taken) {
+            taken++;
+          } else {
+            missed++;
+          }
+        } else if (isPastDate) {
+          // If no record for past date, count as missed
+          missed++;
+        }
+      });
+      
+      last7Days.push({
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        taken,
+        missed
+      });
+    }
+    
+    return last7Days;
+  };
+
+  const getAdherenceStats = () => {
+    const data = getMedicationAdherenceData();
+    const totalTaken = data.reduce((sum, day) => sum + day.taken, 0);
+    const totalMissed = data.reduce((sum, day) => sum + day.missed, 0);
+    const total = totalTaken + totalMissed;
+    const adherenceRate = total > 0 ? ((totalTaken / total) * 100).toFixed(1) : 0;
+    
+    return {
+      totalTaken,
+      totalMissed,
+      total,
+      adherenceRate: parseFloat(adherenceRate)
+    };
+  };
+
+  const getMotivationalMessage = () => {
+    const stats = getAdherenceStats();
+    const { adherenceRate, totalMissed, totalTaken } = stats;
+
+    const messages = {
+      en: {
+        excellent: `🎉 Congratulations! You've achieved ${adherenceRate}% adherence this week! You took ${totalTaken} medications on time. Keep up the excellent work! Your health is in great hands! 💪`,
+        good: `👍 Good job! ${adherenceRate}% adherence this week. You're doing well, but there's room for improvement. You missed ${totalMissed} doses. Let's aim for 90%+ next week!`,
+        warning: `💪 Keep pushing! You've achieved ${adherenceRate}% adherence, but you missed ${totalMissed} medications this week. Your health matters! Set reminders and try to stick to your schedule. You can do this!`,
+        motivate: `🌟 Don't give up! You missed ${totalMissed} medications this week (${adherenceRate}% adherence). Your health journey is important! Start fresh today - every medication taken is a step towards better health. We believe in you! 💖`
+      },
+      hi: {
+        excellent: `🎉 बधाई हो! आपने इस सप्ताह ${adherenceRate}% पालन हासिल किया है! आपने ${totalTaken} दवाइयाँ समय पर लीं। उत्कृष्ट काम जारी रखें! आपका स्वास्थ्य अच्छे हाथों में है! 💪`,
+        good: `👍 अच्छा काम! इस सप्ताह ${adherenceRate}% पालन। आप अच्छा कर रहे हैं, लेकिन सुधार की गुंजाइश है। आपने ${totalMissed} खुराक छोड़ी। आइए अगले सप्ताह 90%+ का लक्ष्य रखें!`,
+        warning: `💪 कोशिश जारी रखें! आपने ${adherenceRate}% पालन हासिल किया है, लेकिन इस सप्ताह ${totalMissed} दवाइयाँ छूट गईं। आपका स्वास्थ्य महत्वपूर्ण है! रिमाइंडर सेट करें और अपने शेड्यूल पर टिके रहें। आप यह कर सकते हैं!`,
+        motivate: `🌟 हार मत मानिए! आपने इस सप्ताह ${totalMissed} दवाइयाँ छोड़ीं (${adherenceRate}% पालन)। आपकी स्वास्थ्य यात्रा महत्वपूर्ण है! आज से नई शुरुआत करें - ली गई हर दवा बेहतर स्वास्थ्य की ओर एक कदम है। हम आप पर विश्वास करते हैं! 💖`
+      },
+      ta: {
+        excellent: `🎉 வாழ்த்துக்கள்! இந்த வாரம் ${adherenceRate}% பின்பற்றலை அடைந்துள்ளீர்கள்! ${totalTaken} மருந்துகளை சரியான நேரத்தில் எடுத்துக்கொண்டீர்கள். சிறந்த வேலையைத் தொடருங்கள்! உங்கள் ஆரோக்கியம் நல்ல கைகளில் உள்ளது! 💪`,
+        good: `👍 நல்ல வேலை! இந்த வாரம் ${adherenceRate}% பின்பற்றல். நீங்கள் நன்றாக செய்கிறீர்கள், ஆனால் முன்னேற்றத்திற்கு இடம் உள்ளது. ${totalMissed} டோஸ்களை தவறவிட்டீர்கள். அடுத்த வாரம் 90%+ ஐ இலக்காகக் கொள்வோம்!`,
+        warning: `💪 முயற்சியைத் தொடருங்கள்! ${adherenceRate}% பின்பற்றலை அடைந்துள்ளீர்கள், ஆனால் இந்த வாரம் ${totalMissed} மருந்துகளை தவறவிட்டீர்கள். உங்கள் ஆரோக்கியம் முக்கியம்! நினைவூட்டல்களை அமைத்து உங்கள் அட்டவணையைக் கடைப்பிடிக்க முயற்சிக்கவும். நீங்கள் இதைச் செய்ய முடியும்!`,
+        motivate: `🌟 கைவிடாதீர்கள்! இந்த வாரம் ${totalMissed} மருந்துகளை தவறவிட்டீர்கள் (${adherenceRate}% பின்பற்றல்). உங்கள் ஆரோக்கிய பயணம் முக்கியம்! இன்று புதிதாக தொடங்குங்கள் - எடுக்கப்படும் ஒவ்வொரு மருந்தும் சிறந்த ஆரோக்கியத்திற்கான ஒரு படி. நாங்கள் உங்களை நம்புகிறோம்! 💖`
+      },
+      te: {
+        excellent: `🎉 అభినందనలు! ఈ వారం ${adherenceRate}% పాటించడం సాధించారు! ${totalTaken} మందులను సమయానికి తీసుకున్నారు. అద్భుతమైన పనిని కొనసాగించండి! మీ ఆరోగ్యం మంచి చేతుల్లో ఉంది! 💪`,
+        good: `👍 మంచి పని! ఈ వారం ${adherenceRate}% పాటించడం. మీరు బాగా చేస్తున్నారు, కానీ మెరుగుదల కోసం స్థలం ఉంది. ${totalMissed} డోస్‌లు తప్పిపోయారు. వచ్చే వారం 90%+ లక్ష్యం పెట్టుకుందాం!`,
+        warning: `💪 ప్రయత్నం కొనసాగించండి! ${adherenceRate}% పాటించడం సాధించారు, కానీ ఈ వారం ${totalMissed} మందులు తప్పిపోయారు. మీ ఆరోగ్యం ముఖ్యం! రిమైండర్లు సెట్ చేసి మీ షెడ్యూల్‌కు కట్టుబడి ఉండటానికి ప్రయత్నించండి. మీరు దీన్ని చేయగలరు!`,
+        motivate: `🌟 వదులుకోకండి! ఈ వారం ${totalMissed} మందులు తప్పిపోయారు (${adherenceRate}% పాటించడం). మీ ఆరోగ్య ప్రయాణం ముఖ్యం! ఈరోజు కొత్తగా ప్రారంభించండి - తీసుకునే ప్రతి మందు మెరుగైన ఆరోగ్యానికి ఒక అడుగు. మేము మిమ్మల్ని నమ్ముతున్నాము! 💖`
+      },
+      kn: {
+        excellent: `🎉 ಅಭಿನಂದನೆಗಳು! ಈ ವಾರ ${adherenceRate}% ಪಾಲನೆ ಸಾಧಿಸಿದ್ದೀರಿ! ${totalTaken} ಔಷಧಿಗಳನ್ನು ಸಮಯಕ್ಕೆ ತೆಗೆದುಕೊಂಡಿದ್ದೀರಿ. ಅತ್ಯುತ್ತಮ ಕೆಲಸವನ್ನು ಮುಂದುವರಿಸಿ! ನಿಮ್ಮ ಆರೋಗ್ಯ ಉತ್ತಮ ಕೈಗಳಲ್ಲಿದೆ! 💪`,
+        good: `👍 ಉತ್ತಮ ಕೆಲಸ! ಈ ವಾರ ${adherenceRate}% ಪಾಲನೆ. ನೀವು ಚೆನ್ನಾಗಿ ಮಾಡುತ್ತಿದ್ದೀರಿ, ಆದರೆ ಸುಧಾರಣೆಗೆ ಅವಕಾಶವಿದೆ. ${totalMissed} ಡೋಸ್‌ಗಳನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ. ಮುಂದಿನ ವಾರ 90%+ ಗುರಿ ಇಡೋಣ!`,
+        warning: `💪 ಪ್ರಯತ್ನ ಮುಂದುವರಿಸಿ! ${adherenceRate}% ಪಾಲನೆ ಸಾಧಿಸಿದ್ದೀರಿ, ಆದರೆ ಈ ವಾರ ${totalMissed} ಔಷಧಿಗಳನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ. ನಿಮ್ಮ ಆರೋಗ್ಯ ಮುಖ್ಯ! ರಿಮೈಂಡರ್‌ಗಳನ್ನು ಹೊಂದಿಸಿ ಮತ್ತು ನಿಮ್ಮ ವೇಳಾಪಟ್ಟಿಗೆ ಅಂಟಿಕೊಳ್ಳಲು ಪ್ರಯತ್ನಿಸಿ. ನೀವು ಇದನ್ನು ಮಾಡಬಹುದು!`,
+        motivate: `🌟 ಬಿಟ್ಟುಕೊಡಬೇಡಿ! ಈ ವಾರ ${totalMissed} ಔಷಧಿಗಳನ್ನು ತಪ್ಪಿಸಿಕೊಂಡಿದ್ದೀರಿ (${adherenceRate}% ಪಾಲನೆ). ನಿಮ್ಮ ಆರೋಗ್ಯ ಪ್ರಯಾಣ ಮುಖ್ಯ! ಇಂದು ಹೊಸದಾಗಿ ಪ್ರಾರಂಭಿಸಿ - ತೆಗೆದುಕೊಂಡ ಪ್ರತಿ ಔಷಧಿ ಉತ್ತಮ ಆರೋಗ್ಯದ ಕಡೆಗೆ ಒಂದು ಹೆಜ್ಜೆ. ನಾವು ನಿಮ್ಮನ್ನು ನಂಬುತ್ತೇವೆ! 💖`
+      }
+    };
+
+    const langMessages = messages[language];
+
+    if (adherenceRate >= 90) {
+      return {
+        type: 'success',
+        message: langMessages.excellent,
+        bgColor: 'bg-green-50',
+        borderColor: 'border-green-500',
+        textColor: 'text-green-800'
+      };
+    } else if (adherenceRate >= 70) {
+      return {
+        type: 'good',
+        message: langMessages.good,
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-500',
+        textColor: 'text-blue-800'
+      };
+    } else if (adherenceRate >= 50) {
+      return {
+        type: 'warning',
+        message: langMessages.warning,
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-500',
+        textColor: 'text-yellow-800'
+      };
+    } else {
+      return {
+        type: 'motivate',
+        message: langMessages.motivate,
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-500',
+        textColor: 'text-red-800'
+      };
+    }
+  };
+
+  const getTodaysMedications = () => {
+    const today = new Date().toDateString();
+    return medications.map(med => {
+      const todayRecord = med.records?.find(r => 
+        new Date(r.date).toDateString() === today
+      );
+      return {
+        ...med,
+        takenToday: todayRecord?.taken === true,
+        missedToday: todayRecord?.taken === false,
+        noRecordToday: !todayRecord
+      };
+    });
+  };
+
+  const getChartData = () => {
+    return heartRateHistory.slice(-10).map(entry => ({
+      time: new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      bpm: entry.bpm
+    }));
+  };
+
+  const getLatestHeartRate = () => {
+    if (heartRateHistory.length === 0) return null;
+    return heartRateHistory[heartRateHistory.length - 1];
+  };
+
+  // Login Screen
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+          <div className="flex items-center justify-center mb-2">
+            <Heart className="w-12 h-12 text-red-500 mr-2" />
+            <h1 className="text-3xl font-bold text-gray-800">{t.appName}</h1>
+          </div>
+
+          <div className="flex justify-center gap-2 mb-6">
+            {[
+              { code: 'en', label: 'English' },
+              { code: 'hi', label: 'हिंदी' },
+              { code: 'ta', label: 'தமிழ்' },
+              { code: 'te', label: 'తెలుగు' },
+              { code: 'kn', label: 'ಕನ್ನಡ' }
+            ].map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={`px-3 py-1 rounded text-sm ${
+                  language === lang.code
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
+          </div>
+          
+          <div className="space-y-4">
+            {isSignUp ? (
+              // Sign Up Form
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.email}</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.phoneNumber}</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      value={phone.replace(/^\+91/, '')}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setPhone(value);
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="9876543210"
+                      maxLength="10"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Enter 10-digit mobile number</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.password}</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAuth(e)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Min 6 characters, 1 capital letter, 1 number</p>
+                </div>
+              </>
+            ) : (
+              // Login Form
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.emailOrPhone}</label>
+                  <input
+                    type="text"
+                    value={emailOrPhone}
+                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="your@email.com or 9876543210"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Enter email or 10-digit mobile number</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t.password}</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAuth(e)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {authError && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                {authError}
+              </div>
+            )}
+            
+            <button
+              onClick={handleAuth}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
+              {isSignUp ? t.signUp : t.login}
+            </button>
+            
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="w-full text-blue-600 text-sm hover:underline"
+            >
+              {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main App
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center">
+            <Heart className="w-8 h-8 text-red-500 mr-2" />
+            <h1 className="text-2xl font-bold text-gray-800">{t.appName}</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-gray-600" />
+              <select
+                value={language}
+                onChange={(e) => changeLanguage(e.target.value)}
+                className="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+                <option value="ta">தமிழ்</option>
+                <option value="te">తెలుగు</option>
+                <option value="kn">ಕನ್ನಡ</option>
+              </select>
+            </div>
+            
+            {/* Notification Button */}
+            {Notification.permission === 'granted' ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                <Bell className="w-4 h-4" />
+                <span>{t.notificationsEnabled}</span>
+              </div>
+            ) : Notification.permission === 'denied' ? (
+              <button
+                onClick={requestNotificationPermission}
+                className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm hover:bg-red-100 transition"
+              >
+                <Bell className="w-4 h-4" />
+                <span>{t.notificationsBlocked}</span>
+              </button>
+            ) : (
+              <button
+                onClick={requestNotificationPermission}
+                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition"
+              >
+                <Bell className="w-4 h-4" />
+                <span>{t.enableNotifications}</span>
+              </button>
+            )}
+            
+            <span className="text-sm text-gray-600">{user.email}</span>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+            >
+              <LogOut className="w-4 h-4" />
+              {t.logout}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex gap-1">
+            {[
+              { id: 'dashboard', label: t.dashboard, icon: Calendar },
+              { id: 'heartrate', label: t.heartRate, icon: Heart },
+              { id: 'medications', label: t.medications, icon: Pill },
+              { id: 'contacts', label: t.emergencyContacts, icon: Phone }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-6 py-3 border-b-2 transition ${
+                  activeTab === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <tab.icon className="w-5 h-5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Notification Help Modal */}
+        {showNotificationHelp && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">{t.notificationHelpTitle}</h2>
+              <p className="text-gray-600 mb-6">{t.notificationHelpSteps}</p>
+              
+              <div className="space-y-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-800 font-medium">{t.notificationStep1}</p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-800 font-medium">{t.notificationStep2}</p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-800 font-medium">{t.notificationStep3}</p>
+                </div>
+                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <p className="text-gray-800 font-medium">{t.notificationStep4}</p>
+                </div>
+              </div>
+
+              {language === 'en' && (
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <p className="text-sm text-gray-700 mb-2 font-semibold">Browser-specific instructions:</p>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li>• <strong>Chrome/Edge:</strong> Click 🔒 → Site settings → Notifications → Allow</li>
+                    <li>• <strong>Firefox:</strong> Click 🔒 → More information → Permissions → Notifications → Allow</li>
+                    <li>• <strong>Safari:</strong> Safari menu → Settings → Websites → Notifications → Allow</li>
+                  </ul>
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowNotificationHelp(false);
+                    window.location.reload();
+                  }}
+                  className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+                >
+                  Refresh Page
+                </button>
+                <button
+                  onClick={() => setShowNotificationHelp(false)}
+                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+                >
+                  {t.closeHelp}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Dashboard */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">{t.dashboard}</h2>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Latest Heart Rate */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Heart className="w-5 h-5 text-red-500 mr-2" />
+                  {t.latestHeartRate}
+                </h3>
+                {getLatestHeartRate() ? (
+                  <div>
+                    <div className="text-5xl font-bold text-red-500 mb-2">
+                      {getLatestHeartRate().bpm}
+                      <span className="text-2xl text-gray-500 ml-2">BPM</span>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {new Date(getLatestHeartRate().timestamp).toLocaleString()}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-gray-500">{t.noHeartRate}</p>
+                )}
+              </div>
+
+              {/* Today's Medications */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                  <Pill className="w-5 h-5 text-blue-500 mr-2" />
+                  {t.todaysMedications}
+                </h3>
+                <div className="space-y-2">
+                  {getTodaysMedications().length > 0 ? (
+                    getTodaysMedications().map(med => (
+                      <div
+                        key={med.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          med.takenToday ? 'bg-green-50 border-2 border-green-500' : 
+                          med.missedToday ? 'bg-red-50 border-2 border-red-500' : 
+                          'bg-gray-50'
+                        }`}
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">{med.name}</p>
+                          <p className="text-sm text-gray-500">{med.time}</p>
+                        </div>
+                        {med.takenToday ? (
+                          <Check className="w-5 h-5 text-green-600" />
+                        ) : med.missedToday ? (
+                          <X className="w-5 h-5 text-red-600" />
+                        ) : (
+                          <Bell className="w-5 h-5 text-orange-500" />
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500">{t.noMedicationsScheduled}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Medication Adherence Chart */}
+            {medications.length > 0 && (
+              <div className="space-y-6">
+                {/* Daily Adherence Chart */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.medicationAdherence}</h3>
+                  
+                  {/* Daily Stats Summary */}
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-green-50 p-4 rounded-lg text-center border-2 border-green-200">
+                      <p className="text-3xl font-bold text-green-600">{getAdherenceStats().totalTaken}</p>
+                      <p className="text-sm text-green-800 mt-1">{t.taken}</p>
+                    </div>
+                    <div className="bg-red-50 p-4 rounded-lg text-center border-2 border-red-200">
+                      <p className="text-3xl font-bold text-red-600">{getAdherenceStats().totalMissed}</p>
+                      <p className="text-sm text-red-800 mt-1">{t.missed}</p>
+                    </div>
+                    <div className="bg-blue-50 p-4 rounded-lg text-center border-2 border-blue-200">
+                      <p className="text-3xl font-bold text-blue-600">{getAdherenceStats().adherenceRate}%</p>
+                      <p className="text-sm text-blue-800 mt-1">Adherence</p>
+                    </div>
+                  </div>
+
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={getMedicationAdherenceData()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="taken" fill="#10b981" name={t.taken} />
+                      <Bar dataKey="missed" fill="#ef4444" name={t.missed} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Weekly Summary with Motivational Message */}
+                <div className="bg-white rounded-xl shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">📊 {t.weeklySummary}</h3>
+                  
+                  {(() => {
+                    const motivation = getMotivationalMessage();
+                    return (
+                      <div className={`p-6 rounded-lg border-2 ${motivation.bgColor} ${motivation.borderColor}`}>
+                        <p className={`${motivation.textColor} font-medium leading-relaxed text-lg`}>
+                          {motivation.message}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* Heart Rate Graph */}
+            {heartRateHistory.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.heartRateTrend}</h3>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={getChartData()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="bpm" stroke="#ef4444" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Heart Rate Tab */}
+        {activeTab === 'heartrate' && (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">{t.heartRate}</h2>
+            
+            {/* Input */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.recordHeartRate}</h3>
+              <div className="flex gap-4">
+                <input
+                  type="number"
+                  value={heartRate}
+                  onChange={(e) => setHeartRate(e.target.value)}
+                  placeholder={t.enterBPM}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <button
+                  onClick={addHeartRate}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  {t.add}
+                </button>
+              </div>
+            </div>
+
+            {/* Chart */}
+            {heartRateHistory.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.recentReadings}</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={getChartData()}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="bpm" stroke="#ef4444" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* History */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.history}</h3>
+              <div className="space-y-2">
+                {heartRateHistory.slice().reverse().map((entry, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-semibold text-gray-800">{entry.bpm} BPM</p>
+                      <p className="text-sm text-gray-500">{entry.date} at {entry.time}</p>
+                    </div>
+                    <Heart className="w-5 h-5 text-red-500" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Medications Tab */}
+        {activeTab === 'medications' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-800">{t.medications}</h2>
+              <button
+                onClick={() => setShowAddMed(!showAddMed)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                {t.addMedication}
+              </button>
+            </div>
+
+            {/* Add Medication Form */}
+            {showAddMed && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.newMedication}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={newMed.name}
+                    onChange={(e) => setNewMed({...newMed, name: e.target.value})}
+                    placeholder={t.medicationName}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={newMed.dose}
+                    onChange={(e) => setNewMed({...newMed, dose: e.target.value})}
+                    placeholder={t.dose}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="time"
+                    value={newMed.time}
+                    onChange={(e) => setNewMed({...newMed, time: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <select
+                    value={newMed.timing}
+                    onChange={(e) => setNewMed({...newMed, timing: e.target.value})}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="before">{t.beforeMeal}</option>
+                    <option value="after">{t.afterMeal}</option>
+                  </select>
+                </div>
+                <div className="flex gap-4 mt-4">
+                  <button
+                    onClick={addMedication}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+                  >
+                    {t.save}
+                  </button>
+                  <button
+                    onClick={() => setShowAddMed(false)}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+                  >
+                    {t.cancel}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Medications List */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.yourMedications}</h3>
+              <div className="space-y-3">
+                {medications.length > 0 ? (
+                  medications.map(med => {
+                    const todayMed = getTodaysMedications().find(m => m.id === med.id);
+                    return (
+                      <div
+                        key={med.id}
+                        className={`p-4 rounded-lg border-2 transition ${
+                          todayMed?.takenToday ? 'border-green-500 bg-green-50' : 
+                          todayMed?.missedToday ? 'border-red-500 bg-red-50' : 
+                          'border-gray-200 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-800 text-lg">{med.name}</h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {med.dose} • {med.time} • {med.timing === 'before' ? t.beforeMeal : t.afterMeal}
+                            </p>
+                            {todayMed?.takenToday && (
+                              <p className="text-xs text-green-600 font-medium mt-2">✓ Taken today</p>
+                            )}
+                            {todayMed?.missedToday && (
+                              <p className="text-xs text-red-600 font-medium mt-2">✗ Missed today</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => markMedicationTaken(med.id)}
+                              className={`px-4 py-2 rounded-lg transition font-medium ${
+                                todayMed?.takenToday
+                                  ? 'bg-green-600 text-white'
+                                  : 'bg-green-100 text-green-600 hover:bg-green-200'
+                              }`}
+                              title="Mark as taken"
+                            >
+                              {t.taken}
+                            </button>
+                            <button
+                              onClick={() => markMedicationMissed(med.id)}
+                              className={`px-4 py-2 rounded-lg transition font-medium ${
+                                todayMed?.missedToday
+                                  ? 'bg-red-600 text-white'
+                                  : 'bg-orange-100 text-orange-600 hover:bg-orange-200'
+                              }`}
+                              title="Mark as missed"
+                            >
+                              {t.missed}
+                            </button>
+                            <button
+                              onClick={() => deleteMedication(med.id)}
+                              className="p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                              title={t.delete}
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-gray-500 text-center py-8">{t.noMedications}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Emergency Contacts Tab */}
+        {activeTab === 'contacts' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-800">{t.emergencyContacts}</h2>
+              <button
+                onClick={() => setShowAddContact(!showAddContact)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                {t.addEmergencyContact}
+              </button>
+            </div>
+
+            {/* Add Contact Form */}
+            {showAddContact && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.newContact}</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    value={newContact.name}
+                    onChange={(e) => setNewContact({...newContact, name: e.target.value})}
+                    placeholder={t.contactName}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={newContact.relationship}
+                    onChange={(e) => setNewContact({...newContact, relationship: e.target.value})}
+                    placeholder={t.relationship}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <input
+                    type="tel"
+                    value={newContact.phone}
+                    onChange={(e) => setNewContact({...newContact, phone: e.target.value})}
+                    placeholder={t.phoneNumber}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent md:col-span-2"
+                  />
+                </div>
+                <div className="flex gap-4 mt-4">
+                  <button
+                    onClick={addEmergencyContact}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
+                  >
+                    {t.save}
+                  </button>
+                  <button
+                    onClick={() => setShowAddContact(false)}
+                    className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+                  >
+                    {t.cancel}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Contacts List */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">{t.yourContacts}</h3>
+              <div className="space-y-3">
+                {emergencyContacts.length > 0 ? (
+                  emergencyContacts.map(contact => (
+                    <div
+                      key={contact.id}
+                      className="p-4 rounded-lg border-2 border-gray-200 bg-white"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800 text-lg">{contact.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {contact.relationship}
+                          </p>
+                          <p className="text-sm text-blue-600 mt-1 font-medium">
+                            {contact.phone}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <a
+                            href={`tel:${contact.phone}`}
+                            className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition"
+                          >
+                            <Phone className="w-5 h-5" />
+                          </a>
+                          <button
+                            onClick={() => deleteContact(contact.id)}
+                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 text-center py-8">{t.noContacts}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default HealthTrackerApp;
+

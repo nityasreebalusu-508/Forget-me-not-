@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* LIGHT MODE (Default) */
+    --bg-primary: 241, 245, 249;
+    /* Slate 100 */
+    --bg-card: 255, 255, 255;
+    /* White */
+    --bg-card-glass: 255, 255, 255;
+
+    --text-main: 15, 23, 42;
+    /* Slate 900 */
+    --text-muted: 100, 116, 139;
+    /* Slate 500 */
+
+    --border-glass: 203, 213, 225;
+    /* Slate 300 */
+
+    --primary: 99, 102, 241;
+    /* Indigo 500 */
+    --secondary: 236, 72, 153;
+    /* Pink 500 */
+    --success: 16, 185, 129;
+    /* Emerald 500 */
+    --danger: 239, 68, 68;
+    /* Red 500 */
+  }
+
+  .dark {
+    /* DARK MODE */
+    --bg-primary: 15, 23, 42;
+    /* Slate 900 */
+    --bg-card: 30, 41, 59;
+    /* Slate 800 */
+    --bg-card-glass: 30, 41, 59;
+
+    --text-main: 248, 250, 252;
+    /* Slate 50 */
+    --text-muted: 148, 163, 184;
+    /* Slate 400 */
+
+    --border-glass: 255, 255, 255;
+    /* White (alpha will be applied in utils) */
+  }
+
+  body {
+    @apply bg-bg-primary text-text-main font-sans min-h-screen leading-normal antialiased transition-colors duration-300;
+  }
+}
+
+@layer components {
+
+  /* Glassmorphism Utilities */
+  .glass-panel {
+    @apply bg-bg-card-glass/80 border border-glass-border shadow-lg backdrop-blur-xl transition-colors duration-300;
+  }
+
+  /* In light mode, simple white bg is often cleaner than glass, but we keep structure */
+  .dark .glass-panel {
+    @apply bg-bg-card-glass/70;
+  }
+
+  .glass-input {
+    @apply bg-bg-primary/50 border border-glass-border text-text-main backdrop-blur-sm transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium cursor-pointer transition-all border-none gap-2 text-base;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-br from-primary to-primary/80 text-white shadow-md hover:-translate-y-px hover:shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-bg-card text-text-main border border-glass-border hover:bg-bg-primary;
+  }
+
+  .btn-danger {
+    @apply bg-danger/10 text-danger border border-danger/30 hover:bg-danger/20;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
