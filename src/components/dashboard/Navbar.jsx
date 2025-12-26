@@ -116,7 +116,7 @@ const Navbar = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen
                         >
                             <div className="hidden sm:flex flex-col items-end mr-1">
                                 <span className="text-xs font-medium text-text-main">{user?.email?.split('@')[0]}</span>
-                                <span className="text-[10px] text-text-muted">User</span>
+                                <span className="text-[10px] text-text-muted">{t.userRole || 'User'}</span>
                             </div>
                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary to-primary flex items-center justify-center text-white shadow-lg">
                                 <User size={16} />
@@ -127,7 +127,7 @@ const Navbar = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen
                         {isUserOpen && (
                             <div className="absolute right-0 mt-2 w-56 glass-panel rounded-xl py-2 shadow-xl animate-fade-in border border-glass-border z-50">
                                 <div className="px-4 py-3 border-b border-glass-border mb-2">
-                                    <p className="text-sm font-bold text-text-main">Signed in as</p>
+                                    <p className="text-sm font-bold text-text-main">{t.signedInAs || 'Signed in as'}</p>
                                     <p className="text-xs text-text-muted truncate">{user?.email}</p>
                                 </div>
 
@@ -136,14 +136,14 @@ const Navbar = ({ activeTab, setActiveTab, isMobileMenuOpen, setIsMobileMenuOpen
                                     className="w-full text-left px-4 py-2 text-sm text-text-muted hover:text-primary hover:bg-bg-primary flex items-center gap-2"
                                 >
                                     <LayoutDashboard size={16} />
-                                    Dashboard
+                                    {t.dashboard || 'Dashboard'}
                                 </button>
 
                                 <button
                                     className="w-full text-left px-4 py-2 text-sm text-text-muted hover:text-primary hover:bg-bg-primary flex items-center gap-2"
                                 >
                                     <Settings size={16} />
-                                    Settings
+                                    {t.settings || 'Settings'}
                                 </button>
 
                                 <div className="h-px bg-glass-border my-2"></div>

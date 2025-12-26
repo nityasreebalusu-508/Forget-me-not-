@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import { heartRates, medications, contacts } from './services/db';
 import DashboardLayout from './components/dashboard/DashboardLayout';
@@ -18,6 +18,7 @@ import { Activity, Plus } from 'lucide-react';
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const [isSignUp, setIsSignUp] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -140,6 +141,15 @@ const AppContent = () => {
     }
   };
 
+  const handleUpdateContact = async (id, updatedContact) => {
+    try {
+      await contacts.update(id, updatedContact);
+      await loadUserData();
+    } catch (error) {
+      console.error('Error updating contact:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
@@ -162,7 +172,7 @@ const AppContent = () => {
             <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Health Tracker
             </h1>
-            <p className="text-text-muted mt-2">Monitor your health journey</p>
+            <p className="text-text-muted mt-2">{t.monitorHealthJourney || 'Monitor your health journey'}</p>
           </div>
 
           {isSignUp ? (
@@ -186,16 +196,16 @@ const AppContent = () => {
               <HeartRateChart data={heartRateHistory} />
               <Card>
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-text-main">Quick Actions</h3>
+                  <h3 className="text-xl font-bold text-text-main">{t.quickActions || 'Quick Actions'}</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <Button variant="secondary" onClick={() => setIsHrModalOpen(true)} className="h-24 flex-col">
                     <Activity size={24} className="text-secondary" />
-                    Record Heart Rate
+                    {t.recordHeartRate || 'Record Heart Rate'}
                   </Button>
                   <Button variant="secondary" onClick={() => setActiveTab('medications')} className="h-24 flex-col">
                     <Plus size={24} className="text-primary" />
-                    Add Medication
+                    {t.addMedication || 'Add Medication'}
                   </Button>
                 </div>
               </Card>
@@ -208,7 +218,7 @@ const AppContent = () => {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-text-main">Heart Rate History</h2>
               <Button onClick={() => setIsHrModalOpen(true)}>
-                <Plus size={18} /> Record Reading
+                <Plus size={18} /> {t.recordHeartRate || 'Record Reading'}
               </Button>
             </div>
             <HeartRateChart data={heartRateHistory} />
@@ -229,6 +239,7 @@ const AppContent = () => {
             contacts={contactsList}
             onAdd={handleAddContact}
             onDelete={handleDeleteContact}
+            onUpdate={handleUpdateContact}
           />
         );
       default:
@@ -245,7 +256,7 @@ const AppContent = () => {
       <Modal
         isOpen={isHrModalOpen}
         onClose={() => setIsHrModalOpen(false)}
-        title="Record Heart Rate"
+        title={t.recordHeartRate || 'Record Heart Rate'}
       >
         <form onSubmit={addHeartRate} className="flex flex-col gap-4">
           <Input
@@ -259,10 +270,10 @@ const AppContent = () => {
           />
           <div className="flex gap-3 mt-4">
             <Button type="button" variant="secondary" onClick={() => setIsHrModalOpen(false)} className="flex-1">
-              Cancel
+              {t.cancel || 'Cancel'}
             </Button>
             <Button type="submit" variant="primary" className="flex-1">
-              Save
+              {t.save || 'Save'}
             </Button>
           </div>
         </form>

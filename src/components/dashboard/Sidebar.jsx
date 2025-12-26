@@ -17,14 +17,14 @@ const Sidebar = ({ activeTab, setActiveTab, className = '' }) => {
     return (
         <aside className={`w-64 glass-panel rounded-2xl flex flex-col h-[calc(100vh-6rem)] sticky top-24 ${className}`}>
             <div className="p-4 space-y-2 flex-1">
-                <h3 className="text-xs font-bold text-text-muted uppercase px-4 mb-2">Menu</h3>
+                <h3 className="text-xs font-bold text-text-muted uppercase px-4 mb-2">{t.menu || 'Menu'}</h3>
                 {menuItems.map(item => (
                     <button
                         key={item.id}
                         onClick={() => setActiveTab(item.id)}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'text-text-muted hover:bg-bg-primary hover:text-text-main'
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                            : 'text-text-muted hover:bg-bg-primary hover:text-text-main'
                             }`}
                     >
                         <item.icon size={20} />
@@ -41,7 +41,7 @@ const Sidebar = ({ activeTab, setActiveTab, className = '' }) => {
                     title="Switch to Navbar Layout"
                 >
                     <Layout size={20} />
-                    <span className="text-sm">Switch to Navbar</span>
+                    <span className="text-sm">{t.switchToNavbar || 'Switch to Navbar'}</span>
                 </button>
             </div>
         </aside>

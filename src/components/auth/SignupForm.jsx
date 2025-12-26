@@ -21,12 +21,12 @@ const SignupForm = ({ onSwitchToLogin }) => {
     };
 
     const validate = () => {
-        if (formData.password.length < 6) return 'Password must be at least 6 characters';
-        if (!/[A-Z]/.test(formData.password)) return 'Password must contain a capital letter';
-        if (!/[0-9]/.test(formData.password)) return 'Password must contain a number';
+        if (formData.password.length < 6) return t.passwordMinLength || 'Password must be at least 6 characters';
+        if (!/[A-Z]/.test(formData.password)) return t.passwordCapLetter || 'Password must contain a capital letter';
+        if (!/[0-9]/.test(formData.password)) return t.passwordNumber || 'Password must contain a number';
 
         const cleanPhone = formData.phone.replace(/^\+91/, '').replace(/[\s-]/g, '');
-        if (cleanPhone.length !== 10 || !/^\d+$/.test(cleanPhone)) return 'Phone number must be 10 digits';
+        if (cleanPhone.length !== 10 || !/^\d+$/.test(cleanPhone)) return t.phoneDigitsOnly || 'Phone number must be 10 digits';
 
         return null;
     };

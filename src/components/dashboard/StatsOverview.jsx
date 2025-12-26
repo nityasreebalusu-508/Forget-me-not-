@@ -53,7 +53,7 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
                     <p className="text-sm text-text-muted">{t.todaysMedications}</p>
                     <div className="flex items-baseline gap-2">
                         <h3 className="text-3xl font-bold">{getTodaysMedicationsCount()}</h3>
-                        <span className="text-sm text-text-muted">Scheduled</span>
+                        <span className="text-sm text-text-muted">{t.scheduled || 'Scheduled'}</span>
                     </div>
                 </div>
             </Card>
@@ -63,7 +63,7 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
                     <AlertCircle size={24} />
                 </div>
                 <div>
-                    <p className="text-sm text-text-muted">Adherence</p>
+                    <p className="text-sm text-text-muted">{t.adherence || 'Adherence'}</p>
                     <div className="flex items-baseline gap-2">
                         <h3 className="text-3xl font-bold text-warning">{getMissedMedicationsCount()}</h3>
                         <span className="text-sm text-text-muted">{t.missed}</span>
