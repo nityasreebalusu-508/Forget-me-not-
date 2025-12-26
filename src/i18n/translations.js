@@ -1,6 +1,6 @@
 export const translations = {
     en: {
-        appName: 'Health Tracker',
+        appName: 'Forget Me Not: Health Tracker',
         email: 'Email',
         password: 'Password',
         login: 'Login',

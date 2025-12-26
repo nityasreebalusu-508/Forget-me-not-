@@ -278,7 +278,7 @@ const AppContent = () => {
               <Activity size={40} className="text-white" />
             </div>
             <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-              Health Tracker
+              Forget Me Not: Health Tracker
             </h1>
             <p className="text-text-muted text-center">{t.monitorHealthJourney || 'Monitor your health journey'}</p>
           </div>
@@ -355,7 +355,7 @@ const AppContent = () => {
                         </div>
                       </Button>
 
-                      <Button
+                      {false && (<Button
                         variant="secondary"
                         onClick={generateMockData}
                         className="w-full h-auto p-4 flex items-center gap-4 justify-start hover:bg-primary/5 transition-all mt-6"
@@ -367,7 +367,7 @@ const AppContent = () => {
                           <p className="font-medium text-text-main">Generate Mock Data</p>
                           <p className="text-xs text-text-muted">Populate with sample readings</p>
                         </div>
-                      </Button>
+                      </Button>)}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-border">
@@ -390,9 +390,9 @@ const AppContent = () => {
                 <p className="text-text-muted mt-1">Track and analyze your heart rate readings</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button onClick={generateMockData} variant="secondary" className="gap-2">
+                {false && (<Button onClick={generateMockData} variant="secondary" className="gap-2">
                   <Zap size={18} /> Add Mock Data
-                </Button>
+                </Button>)}
                 <Button onClick={() => openHrModal()} className="gap-2">
                   <Plus size={18} /> {t.recordHeartRate || 'Record Reading'}
                 </Button>
