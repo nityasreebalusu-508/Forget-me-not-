@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import Input from '../ui/Input';
 import { Plus, Check, Trash2, Clock, Pill, X, ChevronLeft, ChevronRight, Calendar, Bell, BellOff, TrendingUp, AlertCircle } from 'lucide-react';
 
-const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
+const MedicationList = ({ medications, onAdd, onDelete, onTake, onUpdate }) => {
     const { t } = useLanguage();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -17,6 +17,7 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
         mealType: 'breakfast',
         mealTiming: 'before'
     });
+    const [editingId, setEditingId] = useState(null);
 
     // Check notification permission on mount
     useEffect(() => {
@@ -70,14 +71,31 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onAdd(newMed);
+        if (editingId) {
+            onUpdate(editingId, newMed);
+        } else {
+            onAdd(newMed);
+        }
         setNewMed({ name: '', dose: '', time: '', mealType: 'breakfast', mealTiming: 'before' });
         setIsFormOpen(false);
+        setEditingId(null);
     };
 
     const handleCancel = () => {
         setNewMed({ name: '', dose: '', time: '', mealType: 'breakfast', mealTiming: 'before' });
         setIsFormOpen(false);
+    };
+
+    const handleEdit = (med) => {
+        setNewMed({
+            name: med.name,
+            dose: med.dose,
+            time: med.time,
+            mealType: med.mealType || 'breakfast',
+            mealTiming: med.mealTiming || 'before'
+        });
+        setEditingId(med.id);
+        setIsFormOpen(true);
     };
 
     // Date navigation functions
@@ -287,7 +305,7 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
             {isFormOpen && (
                 <Card className="animate-fade-in">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-text-main">{t.addMedication}</h3>
+                        <h3 className="text-xl font-bold text-text-main">{editingId ? (t.editMedication || 'Edit Medication') : t.addMedication}</h3>
                         <button
                             onClick={handleCancel}
                             className="p-2 rounded-full hover:bg-white/10 text-text-muted hover:text-white transition-colors"
@@ -451,6 +469,18 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
                                                     <Check size={16} /> {t.markAsTaken || 'Mark as Taken'}
                                                 </Button>
                                             )}
+                                            <button
+                                                onClick={() => handleEdit(med)}
+                                                className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/10 transition-colors"
+                                                title={t.edit || "Edit"}
+                                            >
+                                                <div className="w-4 h-4 flex items-center justify-center">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                    </svg>
+                                                </div>
+                                            </button>
                                             <button
                                                 onClick={() => onDelete(med.id)}
                                                 className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-colors"

@@ -6,7 +6,7 @@ const PreferencesContext = createContext();
 export const usePreferences = () => useContext(PreferencesContext);
 
 export const PreferencesProvider = ({ children }) => {
-    const [theme, setTheme] = useState('dark');
+    const [theme, setTheme] = useState('light');
     const [layoutMode, setLayoutMode] = useState('navbar'); // 'navbar' or 'sidebar'
     const [loading, setLoading] = useState(true);
 
