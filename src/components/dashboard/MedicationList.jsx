@@ -141,23 +141,10 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake }) => {
         let weeklyData = Array(7).fill(0).map(() => ({ taken: 0, missed: 0 }));
 
         // Use mock data in development if no real data exists
-        const isDev = import.meta.env.DEV;
+        // Calculate stats based on actual medications
         const hasMedications = medications.length > 0;
 
-        if (!isDev && !hasMedications) {
-            // Mock data for development
-            takenToday = 3;
-            missedToday = 1;
-            weeklyData = [
-                { taken: 2, missed: 1 },
-                { taken: 3, missed: 0 },
-                { taken: 2, missed: 1 },
-                { taken: 3, missed: 0 },
-                { taken: 1, missed: 2 },
-                { taken: 3, missed: 0 },
-                { taken: 3, missed: 1 }
-            ];
-        } else if (hasMedications) {
+        if (hasMedications) {
             medications.forEach(med => {
                 // Today's stats
                 const todayRecord = med.records?.find(r => new Date(r.date).toDateString() === today);
