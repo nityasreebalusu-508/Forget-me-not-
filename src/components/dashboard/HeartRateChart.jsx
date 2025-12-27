@@ -212,7 +212,7 @@ const HeartRateChart = ({ data, onDelete, onEdit }) => {
                 <div className="text-center space-y-4">
                     <Activity size={56} className="mx-auto opacity-40" />
                     <p className="text-lg">{t.noHeartRate || 'No heart rate data available'}</p>
-                    <p className="text-sm text-text-muted/70">Add your first heart rate reading to see analytics</p>
+                    <p className="text-sm text-text-muted/70">{t.noHeartRateAnalyticsMessage || 'Add your first heart rate reading to see analytics'}</p>
                 </div>
             </Card>
         );

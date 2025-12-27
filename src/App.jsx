@@ -264,7 +264,7 @@ const AppContent = () => {
         <div className="animate-spin text-primary mb-4">
           <Activity size={56} />
         </div>
-        <p className="text-lg text-text-muted animate-pulse">Loading your health data...</p>
+        <p className="text-lg text-text-muted animate-pulse">{t.loadingHealthData || 'Loading your health data...'}</p>
       </div>
     );
   }
@@ -278,7 +278,7 @@ const AppContent = () => {
               <Activity size={40} className="text-white" />
             </div>
             <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-              Forget Me Not: Health Tracker
+              {t.appName}
             </h1>
             <p className="text-text-muted text-center">{t.monitorHealthJourney || 'Monitor your health journey'}</p>
           </div>
@@ -309,7 +309,7 @@ const AppContent = () => {
                   <div className="flex flex-col h-full">
                     <div className="mb-6">
                       <h3 className="text-xl font-bold text-text-main">{t.quickActions || 'Quick Actions'}</h3>
-                      <p className="text-sm text-text-muted mt-1">Quickly manage your health data</p>
+                      <p className="text-sm text-text-muted mt-1">{t.quickManageHealth || 'Quickly manage your health data'}</p>
                     </div>
 
                     <div className="flex-1 space-y-4">
@@ -323,7 +323,7 @@ const AppContent = () => {
                         </div>
                         <div className="text-left">
                           <p className="font-medium text-text-main">{t.recordHeartRate || 'Record Heart Rate'}</p>
-                          <p className="text-xs text-text-muted">Add a new heart rate reading</p>
+                          <p className="text-xs text-text-muted">{t.recordHeartRateDesc || 'Add a new heart rate reading'}</p>
                         </div>
                       </Button>
 
@@ -337,7 +337,7 @@ const AppContent = () => {
                         </div>
                         <div className="text-left">
                           <p className="font-medium text-text-main">{t.addMedication || 'Add Medication'}</p>
-                          <p className="text-xs text-text-muted">Track new medication</p>
+                          <p className="text-xs text-text-muted">{t.trackNewMedication || 'Track new medication'}</p>
                         </div>
                       </Button>
 
@@ -350,8 +350,8 @@ const AppContent = () => {
                           <Plus size={22} />
                         </div>
                         <div className="text-left">
-                          <p className="font-medium text-text-main">Add Contact</p>
-                          <p className="text-xs text-text-muted">Emergency contact info</p>
+                          <p className="font-medium text-text-main">{t.addContact || 'Add Contact'}</p>
+                          <p className="text-xs text-text-muted">{t.emergencyContactInfo || 'Emergency contact info'}</p>
                         </div>
                       </Button>
 
@@ -364,15 +364,15 @@ const AppContent = () => {
                           <Zap size={22} />
                         </div>
                         <div className="text-left">
-                          <p className="font-medium text-text-main">Generate Mock Data</p>
-                          <p className="text-xs text-text-muted">Populate with sample readings</p>
+                          <p className="font-medium text-text-main">{t.generateMockData || 'Generate Mock Data'}</p>
+                          <p className="text-xs text-text-muted">{t.populateSamples || 'Populate with sample readings'}</p>
                         </div>
                       </Button>)}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-border">
                       <p className="text-xs text-text-muted text-center">
-                        {heartRateHistory.length} heart rate readings • {medicationsList.length} medications • {contactsList.length} contacts
+                        {heartRateHistory.length} {t.heartRate} {t.readings || 'readings'} • {medicationsList.length} {t.medications} • {contactsList.length} {t.contacts || 'contacts'}
                       </p>
                     </div>
                   </div>
@@ -386,13 +386,13 @@ const AppContent = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
               <div>
-                <h2 className="text-2xl font-bold text-text-main">Heart Rate History</h2>
-                <p className="text-text-muted mt-1">Track and analyze your heart rate readings</p>
+                <h2 className="text-2xl font-bold text-text-main">{t.history || 'Heart Rate History'}</h2>
+                <p className="text-text-muted mt-1">{t.trackAnalyzeHeartRate || 'Track and analyze your heart rate readings'}</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                {false && (<Button onClick={generateMockData} variant="secondary" className="gap-2">
-                  <Zap size={18} /> Add Mock Data
-                </Button>)}
+                <Button onClick={generateMockData} variant="secondary" className="gap-2">
+                  <Zap size={18} /> {t.addMockData || 'Add Mock Data'}
+                </Button>
                 <Button onClick={() => openHrModal()} className="gap-2">
                   <Plus size={18} /> {t.recordHeartRate || 'Record Reading'}
                 </Button>
@@ -454,11 +454,11 @@ const AppContent = () => {
             />
           </div>
           <Input
-            label="Heart Rate (BPM)"
+            label={`${t.heartRate} (${t.bpm})`}
             type="number"
             value={newHr}
             onChange={(e) => setNewHr(e.target.value)}
-            placeholder="e.g. 72"
+            placeholder={t.exampleBpm || 'e.g. 72'}
             autoFocus
             required
             min="30"

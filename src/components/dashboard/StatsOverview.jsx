@@ -48,7 +48,9 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
     };
 
     const adherence = getWeeklyAdherence();
-    const adherenceColor = adherence >= 80 ? 'text-success' : adherence >= 50 ? 'text-warning' : 'text-danger';
+    const weeklyAdherence = getWeeklyAdherence();
+    const adherenceColor = weeklyAdherence >= 80 ? 'text-success' : weeklyAdherence >= 50 ? 'text-warning' : 'text-danger';
+    const latestHeartRate = getLatestHeartRate();
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -59,8 +61,14 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
                 <div>
                     <p className="text-sm text-text-muted">{t.latestHeartRate}</p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className="text-3xl font-bold">{getLatestHeartRate()}</h3>
+                        <h3 className="text-3xl font-bold">{latestHeartRate}</h3>
                         <span className="text-sm text-text-muted">BPM</span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-text-muted">{t.status || 'Status'}</span>
+                        <span className={`text-xs font-medium px-2 py-1 rounded ${latestHeartRate >= 60 && latestHeartRate <= 100 ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}`}>
+                            {latestHeartRate >= 60 && latestHeartRate <= 100 ? (t.normal || 'Normal') : (t.abnormal || 'Abnormal')}
+                        </span>
                     </div>
                 </div>
             </Card>
@@ -76,9 +84,9 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
                     </div>
                 </div>
 
-                <div className="flex-1 mt-2 space-y-2 overflow-y-auto max-h-[120px] pr-1 scrollbar-thin scrollbar-thumb-primary/20 hover:scrollbar-thumb-primary/40">
+                <div className="flex-1 overflow-y-auto px-4 pb-2 space-y-2 scrollbar-thin scrollbar-thumb-primary/20">
                     {medications.length === 0 ? (
-                        <p className="text-sm text-text-muted italic">{t.noMedicationsScheduled || 'No medications scheduled'}</p>
+                        <p className="text-xs text-text-muted italic py-2">{t.noMeds || 'No meds'}</p>
                     ) : (
                         medications.map((med, idx) => (
                             <div key={idx} className="flex items-center justify-between text-sm p-2 rounded-lg bg-bg-primary/50 border border-border hover:border-primary/30 transition-colors">
@@ -97,9 +105,10 @@ const StatsOverview = ({ heartRateHistory, medications }) => {
                     <TrendingUp size={24} />
                 </div>
                 <div>
-                    <p className="text-sm text-text-muted">{t.weeklyAdherence || 'Weekly Adherence'}</p>
+                    <p className="text-sm font-medium text-text-muted mb-1">{t.weeklyAdherence || 'Weekly Adherence'}</p>
                     <div className="flex items-baseline gap-2">
-                        <h3 className={`text-3xl font-bold ${adherenceColor}`}>{adherence}%</h3>
+                        <h3 className={`text-3xl font-bold ${adherenceColor}`}>{weeklyAdherence}%</h3>
+                        <span className="text-lg text-text-muted">{t.sevenDays || '7 Days'}</span>
                     </div>
                 </div>
             </Card>
