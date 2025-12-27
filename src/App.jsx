@@ -125,59 +125,6 @@ const AppContent = () => {
     }
   };
 
-  const generateMockData = async () => {
-    try {
-      console.log("Starting mock data generation...");
-      if (!user) { console.error("No user found!"); return; }
-      console.log("Generating data for user ID:", user.id);
-
-      // Clear existing data first
-      await heartRates.clear();
-      console.log("Cleared existing heart rate data.");
-
-      const mockData = [];
-      const now = new Date();
-
-      // Generate data for the last 30 days
-      for (let i = 0; i < 30; i++) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-
-        // 1-3 readings per day
-        const readingsCount = Math.floor(Math.random() * 3) + 1;
-
-        for (let j = 0; j < readingsCount; j++) {
-          // Random time between 8 AM and 10 PM
-          const hour = Math.floor(Math.random() * (22 - 8 + 1)) + 8;
-          const minute = Math.floor(Math.random() * 60);
-          date.setHours(hour, minute, 0);
-
-          // Random BPM with some variation
-          // Mostly normal (60-100), occasional spikes
-          let bpm = Math.floor(Math.random() * (90 - 60 + 1)) + 60;
-          if (Math.random() > 0.8) bpm += Math.floor(Math.random() * 30); // Occasional high
-          if (Math.random() > 0.95) bpm -= Math.floor(Math.random() * 15); // Rare low
-
-          mockData.push({
-            userId: user.id,
-            bpm: bpm,
-            timestamp: date.toISOString(),
-            date: date.toLocaleDateString(),
-            time: date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
-          });
-        }
-      }
-
-      console.log(`Generated ${mockData.length} mock entries.`);
-      await heartRates.bulkAdd(mockData);
-      console.log("Bulk add complete. Reloading user data...");
-      await loadUserData();
-      console.log("User data reloaded.");
-    } catch (error) {
-      console.error("Error generating mock data:", error);
-    }
-  };
-
   // --- Medication Handlers ---
   const handleAddMedication = async (med) => {
     if (!user) return;
@@ -354,20 +301,6 @@ const AppContent = () => {
                           <p className="text-xs text-text-muted">{t.emergencyContactInfo || 'Emergency contact info'}</p>
                         </div>
                       </Button>
-
-                      {false && (<Button
-                        variant="secondary"
-                        onClick={generateMockData}
-                        className="w-full h-auto p-4 flex items-center gap-4 justify-start hover:bg-primary/5 transition-all mt-6"
-                      >
-                        <div className="p-2 rounded-lg bg-warning/10 text-warning">
-                          <Zap size={22} />
-                        </div>
-                        <div className="text-left">
-                          <p className="font-medium text-text-main">{t.generateMockData || 'Generate Mock Data'}</p>
-                          <p className="text-xs text-text-muted">{t.populateSamples || 'Populate with sample readings'}</p>
-                        </div>
-                      </Button>)}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-border">
@@ -390,9 +323,6 @@ const AppContent = () => {
                 <p className="text-text-muted mt-1">{t.trackAnalyzeHeartRate || 'Track and analyze your heart rate readings'}</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button onClick={generateMockData} variant="secondary" className="gap-2">
-                  <Zap size={18} /> {t.addMockData || 'Add Mock Data'}
-                </Button>
                 <Button onClick={() => openHrModal()} className="gap-2">
                   <Plus size={18} /> {t.recordHeartRate || 'Record Reading'}
                 </Button>
