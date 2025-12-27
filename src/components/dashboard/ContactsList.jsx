@@ -14,7 +14,7 @@ const ContactsList = ({ contacts, onAdd, onDelete, onUpdate }) => {
     const [newContact, setNewContact] = useState({
         name: '',
         relationship: '',
-        countryCode: '+1',
+        countryCode: '+91',
         phone: ''
     });
 
@@ -69,14 +69,14 @@ const ContactsList = ({ contacts, onAdd, onDelete, onUpdate }) => {
             onAdd(contactData);
         }
 
-        setNewContact({ name: '', relationship: '', countryCode: '+1', phone: '' });
+        setNewContact({ name: '', relationship: '', countryCode: '+91', phone: '' });
         setEditingId(null);
         setPhoneError('');
         setIsFormOpen(false);
     };
 
     const handleCancel = () => {
-        setNewContact({ name: '', relationship: '', countryCode: '+1', phone: '' });
+        setNewContact({ name: '', relationship: '', countryCode: '+91', phone: '' });
         setEditingId(null);
         setPhoneError('');
         setIsFormOpen(false);
@@ -85,7 +85,7 @@ const ContactsList = ({ contacts, onAdd, onDelete, onUpdate }) => {
     const handleEdit = (contact) => {
         // Try to extract country code and phone number
         // This is a simple heuristic - finds the matching country code prefix
-        let countryCode = '+1';
+        let countryCode = '+91';
         let phoneNumber = contact.phone;
 
         // Sort country codes by length (descending) to match longest prefix first
