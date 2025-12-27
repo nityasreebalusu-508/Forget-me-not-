@@ -19,6 +19,8 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake, onUpdate }) => {
     });
     const [editingId, setEditingId] = useState(null);
 
+    const [notificationTimeouts, setNotificationTimeouts] = useState([]);
+
     // Check notification permission on mount
     useEffect(() => {
         if ('Notification' in window) {
@@ -28,45 +30,80 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake, onUpdate }) => {
 
     // Request notification permission
     const requestNotificationPermission = async () => {
-        if ('Notification' in window) {
-            const permission = await Notification.requestPermission();
-            setNotificationsEnabled(permission === 'granted');
+        if (!('Notification' in window)) {
+            alert('This browser does not support desktop notifications');
+            return;
+        }
 
-            if (permission === 'granted') {
-                new Notification('Medication Reminders Enabled', {
-                    body: 'You will receive reminders for your medications',
-                    icon: '/favicon.ico'
-                });
-            }
+        const permission = await Notification.requestPermission();
+        setNotificationsEnabled(permission === 'granted');
+
+        if (permission === 'granted') {
+            new Notification('Notifications Enabled', {
+                body: 'You will now receive reminders for your medications',
+                icon: '/favicon.ico'
+            });
         }
     };
 
-    // Schedule notification for medication
-    const scheduleNotification = (medication) => {
-        if (!notificationsEnabled) return;
-
-        const [hours, minutes] = medication.time.split(':');
-        const now = new Date();
-        const scheduledTime = new Date();
-        scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0);
-
-        if (scheduledTime > now) {
-            const timeUntil = scheduledTime - now;
-            setTimeout(() => {
-                new Notification(`Time for ${medication.name}`, {
-                    body: `${medication.dose} - ${medication.timing}`,
-                    icon: '/favicon.ico',
-                    tag: medication.id
-                });
-            }, timeUntil);
+    const sendTestNotification = () => {
+        if (Notification.permission === 'granted') {
+            new Notification('Test Notification', {
+                body: 'This is how your medication reminders will look!',
+                icon: '/favicon.ico'
+            });
+        } else {
+            requestNotificationPermission();
         }
     };
 
-    // Schedule notifications for all medications
+    // Schedule notifications with cleanup
     useEffect(() => {
-        if (notificationsEnabled && medications.length > 0) {
-            medications.forEach(scheduleNotification);
+        // Clear existing timeouts
+        notificationTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+
+        if (!notificationsEnabled || medications.length === 0) {
+            setNotificationTimeouts([]);
+            return;
         }
+
+        const newTimeouts = [];
+        const now = new Date();
+
+        medications.forEach(medication => {
+            if (!medication.time) return;
+
+            const [hours, minutes] = medication.time.split(':');
+            const scheduledTime = new Date();
+            scheduledTime.setHours(parseInt(hours), parseInt(minutes), 0);
+
+            if (scheduledTime > now) {
+                const timeUntil = scheduledTime - now;
+                const timeoutId = setTimeout(() => {
+                    new Notification(`Time for ${medication.name}`, {
+                        body: `${medication.dose ? `${medication.dose} - ` : ''}${t[medication.mealTiming]} ${t[medication.mealType]}`,
+                        icon: '/favicon.ico',
+                        tag: medication.id // Prevent duplicate notifications for same event
+                    });
+
+                    // Play a subtle sound if available
+                    try {
+                        const audio = new Audio('/notification.mp3');
+                        audio.play().catch(e => console.log('Audio play failed', e));
+                    } catch (e) {
+                        // Ignore audio errors
+                    }
+                }, timeUntil);
+                newTimeouts.push(timeoutId);
+            }
+        });
+
+        setNotificationTimeouts(newTimeouts);
+
+        // Cleanup on unmount or re-run
+        return () => {
+            newTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+        };
     }, [notificationsEnabled, medications]);
 
     const handleSubmit = (e) => {
@@ -216,13 +253,23 @@ const MedicationList = ({ medications, onAdd, onDelete, onTake, onUpdate }) => {
                 <h2 className="text-2xl font-bold text-text-main">{t.yourMedications}</h2>
                 <div className="flex items-center gap-3">
                     {/* Notification Toggle */}
+                    {notificationsEnabled && (
+                        <button
+                            onClick={sendTestNotification}
+                            className="bg-bg-primary hover:bg-bg-card border border-glass-border hover:border-primary text-text-muted hover:text-primary transition-all p-2 rounded-lg flex items-center gap-2"
+                            title="Test Notification"
+                        >
+                            <Bell size={18} />
+                            <span className="text-sm font-medium hidden sm:inline">Test</span>
+                        </button>
+                    )}
                     <button
                         onClick={requestNotificationPermission}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${notificationsEnabled
                             ? 'bg-success/20 text-success border border-success/30'
                             : 'bg-bg-primary text-text-muted border border-glass-border hover:border-primary'
                             }`}
-                        title={notificationsEnabled ? 'Notifications enabled' : 'Enable notifications'}
+                        title={notificationsEnabled ? (t.notificationsEnabled || 'Notifications enabled') : (t.enableNotifications || 'Enable notifications')}
                     >
                         {notificationsEnabled ? <Bell size={18} /> : <BellOff size={18} />}
                         <span className="text-sm font-medium hidden sm:inline">
